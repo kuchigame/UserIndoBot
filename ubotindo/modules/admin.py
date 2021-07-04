@@ -550,7 +550,7 @@ Lazy to promote or demote someone for admins? Want to see basic information abou
 All stuff about chatroom such as admin lists, pinning or grabbing an invite link can be \
 done easily using the bot.
 
- × /adminlist: list of admins in the chat
+ × /adminlist: list of admins in the chat (disabled)
 
 *Admin only:*
  × /pin: Silently pins the message replied to - add `loud`, `notify` or `violent` to give notificaton to users.
@@ -606,7 +606,7 @@ DEMOTE_HANDLER = CommandHandler(
 SET_TITLE_HANDLER = DisableAbleCommandHandler(
     "settitle", set_title, pass_args=True, run_async=True
 )
-ADMINLIST_HANDLER = DisableAbleCommandHandler(
+#ADMINLIST_HANDLER = DisableAbleCommandHandler(
     "adminlist", adminlist, filters=Filters.chat_type.groups, run_async=True
 )
 ADMIN_REFRESH_HANDLER = CommandHandler(
@@ -619,7 +619,7 @@ dispatcher.add_handler(UNPIN_HANDLER)
 dispatcher.add_handler(INVITE_HANDLER)
 dispatcher.add_handler(PROMOTE_HANDLER)
 dispatcher.add_handler(DEMOTE_HANDLER)
-dispatcher.add_handler(ADMINLIST_HANDLER)
+#dispatcher.add_handler(ADMINLIST_HANDLER)
 dispatcher.add_handler(ADMIN_REFRESH_HANDLER)
 dispatcher.add_handler(SET_TITLE_HANDLER)
 dispatcher.add_handler(CHAT_PIC_HANDLER)

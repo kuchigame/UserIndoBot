@@ -40,10 +40,8 @@ from telegram.utils.helpers import (
 
 import ubotindo.modules.sql.welcome_sql as sql
 from ubotindo import (
-    DEV_USERS,
     LOGGER,
     MESSAGE_DUMP,
-    OWNER_ID,
     dispatcher,
     spamwtc,
 )
@@ -210,27 +208,6 @@ def new_member(update, context):
                 except BadRequest:
                     pass
                 reply = False
-
-            # Give the owner a special welcome
-            if new_mem.id == OWNER_ID:
-                update.effective_message.reply_text(
-                    "My Owner in the house Let's party 🎉",
-                    reply_to_message_id=reply,
-                )
-                welcome_log = (
-                    f"{escape(chat.title)}\n"
-                    f"#USER_JOINED\n"
-                    f"Bot Owner just joined the chat"
-                )
-                continue
-
-            # Welcome Devs
-            elif new_mem.id in DEV_USERS:
-                update.effective_message.reply_text(
-                    "My Dev Here, let's see what happened now 🔥",
-                    reply_to_message_id=reply,
-                )
-                continue
 
             # Welcome yourself
             elif new_mem.id == context.bot.id:
@@ -509,13 +486,6 @@ def left_member(update, context):
 
             # Ignore bot being kicked
             if left_mem.id == context.bot.id:
-                return
-
-            # Give the owner a special goodbye
-            if left_mem.id == OWNER_ID:
-                update.effective_message.reply_text(
-                    "RIP Master", reply_to_message_id=reply
-                )
                 return
 
             # if media goodbye, use appropriate function for it

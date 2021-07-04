@@ -196,34 +196,7 @@ def info(update, context):
         text += "\n\n<b>This Person is CAS Banned!</b>"
         text += f"\n<b>Reason: </b> <a href='{cas_banned}'>CAS Banned</a>"
         text += "\nAppeal at @cas_discussion"
-
-    if user.id == OWNER_ID:
-        text += "\n\nAye this guy is my owner.\nI would never do anything against him!"
-
-    elif user.id in DEV_USERS:
-        text += (
-            "\n\nThis person is one of my dev users! "
-            "\nHe has the most command for me after my owner."
-        )
-
-    elif user.id in SUDO_USERS:
-        text += (
-            "\n\nThis person is one of my sudo users! "
-            "Nearly as powerful as my owner - so watch it."
-        )
-
-    elif user.id in SUPPORT_USERS:
-        text += (
-            "\n\nThis person is one of my support users! "
-            "Not quite a sudo user, but can still gban you off the map."
-        )
-
-    elif user.id in WHITELIST_USERS:
-        text += (
-            "\n\nThis person has been whitelisted! "
-            "That means I'm not allowed to ban/kick them."
-        )
-
+        
     elif user.id == int(1087968824):
         text += "\n\nThis is anonymous admin in this group. "
 
@@ -403,96 +376,6 @@ def ud(update, context):
         msg.reply_text(f"Error! {err.message}")
 
 
-@typing_action
-def src(update, context):
-    update.effective_message.reply_text(
-        "Hey there! You can find what makes me click [here](https://github.com/MoveAngel/UserbotindoBot.git).",
-        parse_mode=ParseMode.MARKDOWN,
-        disable_web_page_preview=True,
-    )
-
-
-@send_action(ChatAction.UPLOAD_PHOTO)
-def wall(update, context):
-    chat_id = update.effective_chat.id
-    msg = update.effective_message
-    msg_id = update.effective_message.message_id
-    if not WALL_API:
-        return msg.reply_text("This feature currently unavailable!")
-    args = context.args
-    query = " ".join(args)
-    if not query:
-        msg.reply_text("Please enter a query!")
-        return
-    else:
-        caption = query
-        term = query.replace(" ", "%20")
-        json_rep = r.get(
-            f"https://wall.alphacoders.com/api2.0/get.php?auth={WALL_API}&method=search&term={term}"
-        ).json()
-        if not json_rep.get("success"):
-            msg.reply_text("An error occurred!")
-
-        else:
-            wallpapers = json_rep.get("wallpapers")
-            if not wallpapers:
-                msg.reply_text("No results found! Refine your search.")
-                return
-            else:
-                index = randint(0, len(wallpapers) - 1)  # Choose random index
-                wallpaper = wallpapers[index]
-                wallpaper = wallpaper.get("url_image")
-                wallpaper = wallpaper.replace("\\", "")
-                try:
-                    context.bot.send_photo(
-                        chat_id,
-                        photo=wallpaper,
-                        caption="Preview",
-                        reply_to_message_id=msg_id,
-                        timeout=60,
-                    )
-                    context.bot.send_document(
-                        chat_id,
-                        document=wallpaper,
-                        filename="wallpaper",
-                        caption=caption,
-                        reply_to_message_id=msg_id,
-                        timeout=60,
-                    )
-                except BadRequest as err:
-                    msg.reply_text(err.message)
-
-
-@typing_action
-def getlink(update, context):
-    args = context.args
-    message = update.effective_message
-    if args:
-        pattern = re.compile(r"-\d+")
-    else:
-        return message.reply_text("You don't seem to be referring to any chats.")
-    links = "Invite link(s):\n"
-    for chat_id in pattern.findall(message.text):
-        try:
-            chat = context.bot.getChat(chat_id)
-            bot_member = chat.get_member(context.bot.id)
-            if bot_member.can_invite_users:
-                invitelink = context.bot.exportChatInviteLink(chat_id)
-                links += str(chat_id) + ":\n" + invitelink + "\n"
-            else:
-                links += (
-                    str(chat_id)
-                    + ":\nI don't have access to the invite link."
-                    + "\n"
-                )
-        except BadRequest as excp:
-            links += str(chat_id) + ":\n" + excp.message + "\n"
-        except TelegramError as excp:
-            links += str(chat_id) + ":\n" + excp.message + "\n"
-
-    message.reply_text(links)
-
-
 def staff_ids(update, context):
     sfile = "List of SUDO & SUPPORT users:\n"
     sfile += f"× DEV USER IDs; {DEV_USERS}\n"
@@ -511,54 +394,6 @@ def staff_ids(update, context):
 def stats(update, context):
     update.effective_message.reply_text(
         "Current stats:\n" + "\n".join([mod.__stats__() for mod in STATS])
-    )
-
-
-@typing_action
-def covid(update, context):
-    message = update.effective_message
-    country = str(message.text[len(f"/covid ") :])
-    data = Covid(source="worldometers")
-
-    if country == "":
-        country = "world"
-        link = "https://www.worldometers.info/coronavirus"
-    elif country.lower() in ["south korea", "korea"]:
-        country = "s. korea"
-        link = "https://www.worldometers.info/coronavirus/country/south-korea"
-    else:
-        link = f"https://www.worldometers.info/coronavirus/country/{country}"
-    try:
-        c_case = data.get_status_by_country_name(country)
-    except Exception:
-        message.reply_text(
-            "An error have occured! Are you sure the country name is correct?"
-        )
-        return
-    total_tests = c_case["total_tests"]
-    if total_tests == 0:
-        total_tests = "N/A"
-    else:
-        total_tests = format_integer(c_case["total_tests"])
-
-    date = datetime.datetime.now().strftime("%d %b %Y")
-
-    output = (
-        f"<b>Corona Virus Statistics in {c_case['country']}</b>\n"
-        f"<b>on {date}</b>\n\n"
-        f"<b>Confirmed Cases :</b> <code>{format_integer(c_case['confirmed'])}</code>\n"
-        f"<b>Active Cases :</b> <code>{format_integer(c_case['active'])}</code>\n"
-        f"<b>Deaths :</b> <code>{format_integer(c_case['deaths'])}</code>\n"
-        f"<b>Recovered :</b> <code>{format_integer(c_case['recovered'])}</code>\n\n"
-        f"<b>New Cases :</b> <code>{format_integer(c_case['new_cases'])}</code>\n"
-        f"<b>New Deaths :</b> <code>{format_integer(c_case['new_deaths'])}</code>\n"
-        f"<b>Critical Cases :</b> <code>{format_integer(c_case['critical'])}</code>\n"
-        f"<b>Total Tests :</b> <code>{total_tests}</code>\n\n"
-        f"Data provided by <a href='{link}'>Worldometer</a>"
-    )
-
-    message.reply_text(
-        output, parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
 
 
@@ -582,48 +417,6 @@ def format_integer(number, thousand_separator="."):
     return result
 
 
-@typing_action
-def paste(update, context):
-    msg = update.effective_message
-
-    if msg.reply_to_message and msg.reply_to_message.document:
-        file = context.bot.get_file(msg.reply_to_message.document)
-        file.download("file.txt")
-        text = codecs.open("file.txt", "r+", encoding="utf-8")
-        paste_text = text.read()
-        link = (
-            post(
-                "https://nekobin.com/api/documents",
-                json={"content": paste_text},
-            )
-            .json()
-            .get("result")
-            .get("key")
-        )
-        text = "**Pasted to Nekobin!!!**"
-        buttons = [
-            [
-                InlineKeyboardButton(
-                    text="View Link", url=f"https://nekobin.com/{link}"
-                ),
-                InlineKeyboardButton(
-                    text="View Raw",
-                    url=f"https://nekobin.com/raw/{link}",
-                ),
-            ]
-        ]
-        msg.reply_text(
-            text,
-            reply_markup=InlineKeyboardMarkup(buttons),
-            parse_mode=ParseMode.MARKDOWN,
-            disable_web_page_preview=True,
-        )
-        os.remove("file.txt")
-    else:
-        msg.reply_text("Give me a text file to paste on nekobin")
-        return
-
-
 __help__ = """
 An "odds and ends" module for small, simple commands which don't really fit anywhere
 
@@ -631,17 +424,8 @@ An "odds and ends" module for small, simple commands which don't really fit anyw
  × /info: Get information about a user.
  × /wiki : Search wikipedia articles.
  × /ud <query> : Search stuffs in urban dictionary.
- × /wall <query> : Get random wallpapers directly from bot!
- × /reverse : Reverse searches image or stickers on google.
- × /covid <country name>: Give stats about COVID-19.
- × /paste : Paste any text file to Nekobin.
  × /gdpr: Deletes your information from the bot's database. Private chats only.
  × /markdownhelp: Quick summary of how markdown works in telegram - can only be called in private chats.
-
-Last.FM
- × /setuser <username>: sets your last.fm username.
- × /clearuser: removes your last.fm username from the bot's database.
- × /lastfm: returns what you're scrobbling on last.fm.
 """
 
 __mod_name__ = "Miscs"
@@ -665,25 +449,11 @@ GDPR_HANDLER = CommandHandler(
     "gdpr", gdpr, filters=Filters.private, run_async=True
 )
 WIKI_HANDLER = DisableAbleCommandHandler("wiki", wiki, run_async=True)
-WALLPAPER_HANDLER = DisableAbleCommandHandler(
-    "wall", wall, pass_args=True, run_async=True
-)
 UD_HANDLER = DisableAbleCommandHandler("ud", ud, run_async=True)
-GETLINK_HANDLER = CommandHandler(
-    "getlink",
-    getlink,
-    pass_args=True,
-    filters=CustomFilters.dev_filter,
-    run_async=True,
-)
 STAFFLIST_HANDLER = CommandHandler(
     "staffids", staff_ids, filters=Filters.user(OWNER_ID), run_async=True
 )
-# SRC_HANDLER = CommandHandler("source", src, filters=Filters.private)
-COVID_HANDLER = CommandHandler("covid", covid, run_async=True)
-PASTE_HANDLER = CommandHandler("paste", paste, run_async=True)
 
-dispatcher.add_handler(WALLPAPER_HANDLER)
 dispatcher.add_handler(UD_HANDLER)
 dispatcher.add_handler(ID_HANDLER)
 dispatcher.add_handler(INFO_HANDLER)
@@ -692,8 +462,4 @@ dispatcher.add_handler(MD_HELP_HANDLER)
 dispatcher.add_handler(STATS_HANDLER)
 dispatcher.add_handler(GDPR_HANDLER)
 dispatcher.add_handler(WIKI_HANDLER)
-dispatcher.add_handler(GETLINK_HANDLER)
 dispatcher.add_handler(STAFFLIST_HANDLER)
-# dispatcher.add_handler(SRC_HANDLER)
-dispatcher.add_handler(COVID_HANDLER)
-dispatcher.add_handler(PASTE_HANDLER)
