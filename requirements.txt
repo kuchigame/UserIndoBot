@@ -2,7 +2,6 @@ alphabet_detector
 bs4
 bleach
 cachetools
-covid
 demjson
 dnspython
 emoji
