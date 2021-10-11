@@ -1,5 +1,5 @@
 # set base image (host OS)
-FROM python:3.8
+FROM python:3.9.7-slim-bullseye
 
 # set the working directory in the container
 WORKDIR /ubotindo/
@@ -15,7 +15,7 @@ RUN apt -qq install -y --no-install-recommends \
 COPY requirements.txt .
 
 # install dependencies
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # copy the content of the local src directory to the working directory
 COPY . .
